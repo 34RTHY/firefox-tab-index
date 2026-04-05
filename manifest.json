@@ -1,13 +1,21 @@
 {
   "manifest_version": 2,
   "name": "Tab Index",
-  "version": "1.0.0",
-  "description": "Shows tab index numbers as badges. Know exactly which tab Cmd/Alt+1-8 will jump to.",
-  "permissions": ["tabs"],
+  "version": "1.1.0",
+  "description": "Shows tab index numbers as floating badges on every page. Know exactly which tab Cmd/Alt+1-8 will jump to.",
+  "permissions": ["tabs", "activeTab"],
   "background": {
     "scripts": ["background.js"],
     "persistent": false
   },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_end"
+    }
+  ],
   "browser_action": {
     "default_popup": "popup/popup.html",
     "default_icon": {

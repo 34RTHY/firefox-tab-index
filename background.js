@@ -1,20 +1,30 @@
-// Colors for badge
-const SHORTCUT_COLOR = "#2563eb"; // blue — reachable via Cmd/Alt+1-8
-const BEYOND_COLOR = "#6b7280";   // gray — no shortcut
-const ACTIVE_COLOR = "#16a34a";   // green — currently active tab
-const LAST_COLOR = "#9333ea";     // purple — Cmd/Alt+9 (last tab)
+const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+const modKey = isMac ? "⌘" : "Alt";
 
-function getColor(index, isActive, isLast, totalTabs) {
-  if (isActive) return ACTIVE_COLOR;
-  if (isLast && totalTabs > 9) return LAST_COLOR;
-  if (index <= 8) return SHORTCUT_COLOR;
-  return BEYOND_COLOR;
+function getTabData(tab, total) {
+  const num = tab.index + 1;
+  const isLast = tab.index === total - 1;
+
+  let type = "shortcut";
+  let shortcutKey = "";
+
+  if (num <= 8) {
+    type = "shortcut";
+    shortcutKey = `${modKey}+${num}`;
+  } else if (isLast) {
+    type = "last";
+    shortcutKey = `${modKey}+9`;
+  } else {
+    type = "beyond";
+    shortcutKey = "";
+  }
+
+  return { action: "updateIndex", index: num, type, shortcutKey };
 }
 
-async function updateAllBadges() {
+async function updateAllTabs() {
   const tabs = await browser.tabs.query({});
 
-  // Group tabs by window
   const windows = {};
   for (const tab of tabs) {
     if (!windows[tab.windowId]) windows[tab.windowId] = [];
@@ -26,25 +36,44 @@ async function updateAllBadges() {
     const total = windowTabs.length;
 
     for (const tab of windowTabs) {
-      const num = tab.index + 1; // 1-based display
-      const isLast = tab.index === total - 1;
-      const label = num <= 99 ? String(num) : "99+";
-      const color = getColor(num, tab.active, isLast, total);
+      const data = getTabData(tab, total);
+
+      // Update toolbar badge
+      const label = data.index <= 99 ? String(data.index) : "99+";
+      const color = data.type === "last" ? "#9333ea"
+                  : data.type === "beyond" ? "#6b7280"
+                  : "#2563eb";
 
       browser.browserAction.setBadgeText({ text: label, tabId: tab.id });
       browser.browserAction.setBadgeBackgroundColor({ color, tabId: tab.id });
       browser.browserAction.setBadgeTextColor({ color: "#ffffff", tabId: tab.id });
+
+      // Send to content script
+      browser.tabs.sendMessage(tab.id, data).catch(() => {
+        // Content script not loaded yet on this tab — ignore
+      });
     }
   }
 }
 
+// Listen for content scripts requesting their index
+browser.runtime.onMessage.addListener((msg, sender) => {
+  if (msg.action === "getIndex" && sender.tab) {
+    browser.tabs.query({ windowId: sender.tab.windowId }).then((tabs) => {
+      const total = tabs.length;
+      const data = getTabData(sender.tab, total);
+      browser.tabs.sendMessage(sender.tab.id, data).catch(() => {});
+    });
+  }
+});
+
 // Update on every tab event
-browser.tabs.onCreated.addListener(updateAllBadges);
-browser.tabs.onRemoved.addListener(updateAllBadges);
-browser.tabs.onMoved.addListener(updateAllBadges);
-browser.tabs.onActivated.addListener(updateAllBadges);
-browser.tabs.onDetached.addListener(updateAllBadges);
-browser.tabs.onAttached.addListener(updateAllBadges);
+browser.tabs.onCreated.addListener(updateAllTabs);
+browser.tabs.onRemoved.addListener(updateAllTabs);
+browser.tabs.onMoved.addListener(updateAllTabs);
+browser.tabs.onActivated.addListener(updateAllTabs);
+browser.tabs.onDetached.addListener(updateAllTabs);
+browser.tabs.onAttached.addListener(updateAllTabs);
 
 // Initial paint
-updateAllBadges();
+updateAllTabs();
