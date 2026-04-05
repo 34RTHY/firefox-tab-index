@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      color: #1f2937;
+      background: #ffffff;
+    }
+    .header {
+      padding: 12px 14px 8px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .header h1 {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .header p {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+    .legend {
+      padding: 10px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: #4b5563;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+    }
+    .dot.active   { background: #16a34a; }
+    .dot.shortcut { background: #2563eb; }
+    .dot.last     { background: #9333ea; }
+    .dot.beyond   { background: #6b7280; }
+
+    .tab-list {
+      max-height: 350px;
+      overflow-y: auto;
+    }
+    .tab-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      cursor: pointer;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .tab-item:hover { background: #f9fafb; }
+    .tab-item.active { background: #f0fdf4; }
+
+    .tab-num {
+      min-width: 26px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .tab-favicon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+    .tab-title {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 12px;
+    }
+    .tab-shortcut {
+      font-size: 10px;
+      color: #9ca3af;
+      flex-shrink: 0;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Tab Index</h1>
+    <p id="tab-count"></p>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><span class="dot active"></span> Active</div>
+    <div class="legend-item"><span class="dot shortcut"></span> ⌘/Alt 1-8</div>
+    <div class="legend-item"><span class="dot last"></span> ⌘/Alt 9</div>
+    <div class="legend-item"><span class="dot beyond"></span> No shortcut</div>
+  </div>
+  <div class="tab-list" id="tab-list"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
