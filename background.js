@@ -19,7 +19,7 @@ function getTabData(tab, total) {
     shortcutKey = "";
   }
 
-  return { action: "updateIndex", index: num, type, shortcutKey };
+  return { action: "updateIndex", index: num, type, shortcutKey, isLast };
 }
 
 async function updateAllTabs() {
