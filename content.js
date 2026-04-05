@@ -1,42 +1,42 @@
-// Content script: renders a floating tab index badge on each page
+// Content script: prepends tab index to the page title
 
-function createBadge() {
-  let badge = document.getElementById("tab-index-badge");
-  if (!badge) {
-    badge = document.createElement("div");
-    badge.id = "tab-index-badge";
-    document.documentElement.appendChild(badge);
+let originalTitle = document.title;
+let currentPrefix = "";
+
+// Watch for title changes from the page itself (e.g. notifications, SPAs)
+const observer = new MutationObserver(() => {
+  const raw = document.title;
+  // Strip our prefix if present before saving
+  if (currentPrefix && raw.startsWith(currentPrefix)) {
+    originalTitle = raw.slice(currentPrefix.length);
+  } else {
+    originalTitle = raw;
   }
-  return badge;
+  // Re-apply prefix
+  if (currentPrefix) {
+    const target = currentPrefix + originalTitle;
+    if (document.title !== target) {
+      document.title = target;
+    }
+  }
+});
+
+const titleEl = document.querySelector("title");
+if (titleEl) {
+  observer.observe(titleEl, { childList: true, characterData: true, subtree: true });
 }
 
-function updateBadge(data) {
-  const badge = createBadge();
-  const { index, shortcutKey } = data;
-
-  badge.textContent = "";
-
-  const numSpan = document.createElement("span");
-  numSpan.textContent = index;
-  badge.appendChild(numSpan);
-
-  if (shortcutKey) {
-    const hint = document.createElement("span");
-    hint.className = "tab-index-hint";
-    hint.textContent = shortcutKey;
-    badge.appendChild(hint);
-  }
-
-  badge.className = "";
-  if (data.type === "last") badge.className = "last";
-  else if (data.type === "beyond") badge.className = "beyond";
-  else badge.className = "shortcut";
+function applyPrefix(index) {
+  const newPrefix = `${index} | `;
+  if (newPrefix === currentPrefix) return;
+  currentPrefix = newPrefix;
+  document.title = currentPrefix + originalTitle;
 }
 
 // Listen for updates from background script
 browser.runtime.onMessage.addListener((msg) => {
   if (msg.action === "updateIndex") {
-    updateBadge(msg);
+    applyPrefix(msg.index);
   }
 });
 

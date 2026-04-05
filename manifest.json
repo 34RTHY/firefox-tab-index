@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "Tab Index",
-  "version": "1.1.0",
-  "description": "Shows tab index numbers as floating badges on every page. Know exactly which tab Cmd/Alt+1-8 will jump to.",
+  "version": "1.2.0",
+  "description": "Shows tab index numbers in each tab's title. Know exactly which tab Cmd/Alt+1-8 will jump to.",
   "permissions": ["tabs", "activeTab"],
   "background": {
     "scripts": ["background.js"],
@@ -12,7 +12,6 @@
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"],
-      "css": ["content.css"],
       "run_at": "document_end"
     }
   ],
